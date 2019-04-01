@@ -79,6 +79,83 @@ server.post('/users', (req, res) => {
 
 
 
+server.delete('/users/:id', (req, res) => {
+    
+    const id = req.params.id
+
+    db
+     .remove(id)
+     .then(deleted => {
+         // the data layer returns the deleted request, but we can't see it.
+         // .end() ends the request and sends a response with the specified status code
+         // 204 is (no content) it's commonly used for DELETE as there is no need to send anything back. 
+         res.status(204).end();
+     })
+     .catch(({ code, message }) => {
+         res.status(code).json({
+             success: false,
+             message,
+         })
+     })
+     
+})
+
+
+
+
+server.put('/users/:id', (req, res) => {
+    const { id } = req.params;
+    const changes = req.body;
+
+    db
+     .update(id, changes)
+     .then(updated => {
+         if (updated) {
+             res.status(200).json({ success: true, updated })
+         } else {
+             res.status(404).json({
+                 success: false,
+                 message: 'Cannot find the user with the specified ID'
+             })
+         }
+     })
+
+     .catch(({ code, message }) => {
+         res.status(code).json({
+             success: false,
+             message,
+         })
+     })
+})
+
+
+
+
+
+server.get('/users/:id', (req, res) => {
+    db
+     .findById(req.params.id)
+     .then(user => {
+         if (user) {
+             res.status(200).json({
+                success: true,
+                user
+
+             })
+         } else {
+             res.status(404).json({
+                 success: false,
+                 message: 'We cannot find that user!'
+             })
+         }
+     })
+     .catch(({ code, message }) => {
+        res.status(code).json({
+          success: false,
+          message,
+        });
+      });
+  });
 
 // watch for connections on port 8000
 // make the web server listen for incoming traffic on port 4000
